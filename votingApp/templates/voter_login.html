@@ -1,0 +1,44 @@
+{% extends 'base.html'%}
+
+{%load static%}
+
+{% block content %}
+<style>
+    /* Center the card */
+    .card-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    /* Adjust the card size */
+    .card-small {
+      width: 15px;
+      height: 15px;
+    }
+  </style>
+<div class="container mt-5 ">
+    <div class="card card-center card-medium">
+        <div class="card-body">
+            <form method="POST" action="{% url 'voter_login' %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                <div class="form-group">
+                    <label for="unique_id">Unique ID</label>
+                    <input type="text" id="unique_id" name="unique_id" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Login</button>
+                {% if error %}
+                    <p class="text-danger">{{ error }}</p>
+                {% endif %}
+            </div>
+            </form>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}

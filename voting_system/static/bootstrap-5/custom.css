@@ -1,0 +1,29 @@
+.candidate-card {
+  cursor: pointer;
+  border: 1px solid #ddd;
+  position: relative;
+  transition: border-color 0.3s ease;
+}
+
+.candidate-card.selected {
+  border: 3px solid #007bff; /* Highlight border color */
+}
+.checkmark {
+    font-size: 3rem; /* Increase the size of the checkmark */
+    color: rgb(33, 241, 33); /* Color for the checkmark */
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: white;
+    border-radius: 50%;
+    padding: 10px;
+  }
+  
+  body{
+    background-color:  rgb(232, 238, 240);
+  }
+  .nav-link{
+    font-weight: bold;
+    font-size: 18px;
+    font-family: sans-serif;
+  }

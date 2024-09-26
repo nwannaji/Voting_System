@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<h2 style="text-align: center">Select Candidates</h2>
+<form id="vote-form" method="POST" action="">
+    {% csrf_token %}
+    <div class="container" style="margin-top:6rem;">
+        <div class="row">
+            {% for candidate in candidates %}
+            <div class="col-sm-6">
+                <div class="card candidate-card mb-3 justify-content-center"
+                     data-candidate-id="{{ candidate.id }}"
+                     data-position="{{ candidate.position }}"
+                     style="width: 18rem;">
+                    <div class="card text-center">
+                        <img src="{{ candidate.photo.url }}" alt="{{ candidate.name }}" class="card-img-top" />
+                        <div class="card-body">
+                            <h5 class="card-title">{{ candidate.name }}</h5>
+                            <h5 class="card-text">{{ candidate.position }}</h5>
+                        </div>
+                        <div class="checkmark d-none">&#10004;</div> <!-- Checkmark, initially hidden -->
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Hidden input to store selected candidate IDs -->
+        <input type="hidden" name="candidates" id="selected-candidates" />
+
+        <!-- Submit button -->
+        <button type="submit" class="btn btn-success mt-2 mb-3">Submit Vote</button>
+    </div>
+</form>
+
+{% if vote_success %}
+<div class="container">
+    <p class="alert alert-success text-center">
+        Thank you for voting! Your vote has been cast successfully.
+    </p>
+
+    <!-- Trigger auto-logout after 10 seconds only if vote is successful -->
+    <script>
+        setTimeout(function() {
+            window.location.href = "{% url 'voter_logout' %}";  // Redirect to logout after 10 seconds
+        }, 10000);
+    </script>
+</div>
+{% endif %}
+
+<style>
+  .checkmark {
+    font-size: 3rem;
+    color: green;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: white;
+    border-radius: 50%;
+    padding: 10px;
+  }
+  .candidate-card {
+    position: relative;
+    cursor: pointer;
+  }
+  .card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  .candidate-card.selected {
+    border: 2px solid green;
+  }
+  .btn {
+    mb-2;
+  }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const selectedCandidates = {}; // Object to track selected candidates per position
+
+    document.querySelectorAll(".candidate-card").forEach((card) => {
+      card.addEventListener("click", function () {
+        const candidateId = this.getAttribute("data-candidate-id");
+        const position = this.getAttribute("data-position");
+
+        // Deselect the previously selected candidate for this position
+        if (selectedCandidates[position] && selectedCandidates[position] !== candidateId) {
+          const previousCard = document.querySelector(
+            `.candidate-card[data-candidate-id="${selectedCandidates[position]}"]`
+          );
+          previousCard.querySelector(".checkmark").classList.add("d-none");
+        }
+
+        // Toggle the current selection for the position
+        if (selectedCandidates[position] === candidateId) {
+          this.querySelector(".checkmark").classList.add("d-none");
+          delete selectedCandidates[position]; // Remove selection for this position
+        } else {
+          this.querySelector(".checkmark").classList.remove("d-none");
+          selectedCandidates[position] = candidateId; // Set the new selection for this position
+        }
+
+        // Update the hidden input value with the selected candidate IDs
+        document.getElementById("selected-candidates").value = Object.values(selectedCandidates).join(",");
+      });
+    });
+
+    // Prevent form submission if no candidates are selected
+    document.getElementById("vote-form").addEventListener("submit", function(event) {
+      const selectedIds = document.getElementById("selected-candidates").value;
+      if (!selectedIds) {
+        event.preventDefault();  // Prevent submission if no candidates selected
+        alert("Please select at least one candidate to vote.");
+      }
+    });
+  });
+</script>
+
+{% endblock %}
