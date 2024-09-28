@@ -8,6 +8,7 @@ urlpatterns = [
     path('candidates/', views.candidate_page, name='candidate_page'),  # Voting page
     path('logout/', views.voter_logout, name='voter_logout'),  # Voter logout page
     path('results/', views.results_view, name='results'),  # Results page
+    path('chart/', views.chart_view, name='chart'),
     path('export-results/', views.export_results_to_excel, name='export_results'),
 ]
 

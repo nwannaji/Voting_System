@@ -37,10 +37,17 @@
     }
 </style>
 {% endblock %}
+{% block analytics %}
+<!-- Link to the chart page -->
+<li>
+  <a href="{% url 'chart' %}" class="btn btn-primary mt-3 ml-3">Result Analytics</a>
+</li>
+{% endblock %}
 
 {% block export_result_link %}
 <li>
-  <a href="{% url 'export_results' %}" class="btn btn-primary mt-3">Export Results to Excel</a>
+  <a href="{% url 'export_results' %}" class="btn btn-primary mt-3">Download Result</a>
 </li>
 
 {% endblock %}
+

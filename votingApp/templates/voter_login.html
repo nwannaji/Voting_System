@@ -3,6 +3,13 @@
 {%load static%}
 
 {% block content %}
+{% if messages %}
+<div class="container mt-3">
+    <p class="alert alert-success text-warning text-center">
+       !Oops, You have already cast your vote. Thanks
+    </p>
+</div>
+{% endif %}
 <style>
     /* Center the card */
     .card-center {
