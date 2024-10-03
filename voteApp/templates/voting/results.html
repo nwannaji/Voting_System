@@ -1,0 +1,53 @@
+<!-- Example: Integrating Chart.js in results.html -->
+
+{% extends 'base.html' %}
+
+{% block title %}Results - Voting System{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Voting Results</h2>
+
+{% if positions %}
+    {% for position in positions %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4>{{ position.name }}</h4>
+            </div>
+            <div class="card-body">
+                {% if position.candidates.all %}
+                    <canvas id="chart-{{ position.id }}" width="400" height="200"></canvas>
+                    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                    <script>
+                        var ctx = document.getElementById('chart-{{ position.id }}').getContext('2d');
+                        var chart = new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: [{% for candidate in position.candidates.all %}'{{ candidate.name }}',{% endfor %}],
+                                datasets: [{
+                                    label: 'Total Votes',
+                                    data: [{% for candidate in position.candidates.all %}{{ candidate.results.first.total_votes|default:"0" }},{% endfor %}],
+                                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                                    borderColor: 'rgba(54, 162, 235, 1)',
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        precision:0
+                                    }
+                                }
+                            }
+                        });
+                    </script>
+                {% else %}
+                    <p>No candidates available for this position.</p>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <p>No positions available at the moment.</p>
+{% endif %}
+{% endblock %}

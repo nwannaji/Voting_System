@@ -2,7 +2,7 @@ import os
 from django.db import models
 from django.utils.timezone import now
 
-# Position model remains the same
+# Position model
 class Position(models.Model):
     name = models.CharField(max_length=100)
 
@@ -13,7 +13,7 @@ class Position(models.Model):
 def candidate_image_path(instance, filename):
     return os.path.join(f'candidates/{instance.position.name}', filename)
 
-# Candidate model remains the same
+# Candidate model
 class Candidate(models.Model):
     name = models.CharField(max_length=100)
     position = models.ForeignKey(Position, on_delete=models.CASCADE)
@@ -47,7 +47,7 @@ class Voter(models.Model):
         # Combine surname and phone number as password
          f"{self.surname}{self.unique_id}"
 
-# Ballot model remains the same, ties voter to a vote
+# Ballot model, ties voter to a vote
 class Ballot(models.Model):
     voter = models.ForeignKey(Voter, on_delete=models.CASCADE)
     candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE)

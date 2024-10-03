@@ -107,6 +107,7 @@ AUTH_PASSWORD_VALIDATORS = [
 AUTHENTICATION_BACKENDS = [
     'votingApp.authentication_backends.VoterAuthBackend',  # Add your custom backend here
     'django.contrib.auth.backends.ModelBackend',  # Default authentication backend
+    # 'voteApp.backends.PhoneNumberAuthBackend',    # Default phone number auth backend
 ]
 
 

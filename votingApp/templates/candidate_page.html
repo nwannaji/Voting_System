@@ -21,7 +21,7 @@
     {% csrf_token %}
    {% comment %} SECTION FOR CHAIRMAN CANDIDATES {% endcomment %}
    <!-- Section for Chairman Candidates -->
-   <div class="container" style="margin-top:6rem;">
+   <div class="container" style="margin-top:3rem;">
     <h3 style="text-align:center;">Chairman</h3>
     <hr/>
     <div class="row">
@@ -49,7 +49,7 @@
 {% comment %} END SECTION {% endcomment %}
 
     {% comment %} VICE-CHAIRM {% endcomment %}
-    <div class="container" style="margin-top:6rem;">
+    <div class="container" style="margin-top:3rem;">
       <h3 style="text-align:center;">Vice Chairman</h3>
       <hr/>
       <div class="row">
@@ -77,7 +77,7 @@
     {% comment %} END VICE-CHAIRMAN {% endcomment %}
 
     {% comment %}Section General Secretary {% endcomment %}
-    <div class="container" style="margin-top:6rem;">
+    <div class="container" style="margin-top:3rem;">
       <h3 style="text-align:center;">General Secretary</h3>
       <hr/>
       <div class="row">
@@ -105,7 +105,7 @@
     {% comment %} End Section {% endcomment %}
 
     {% comment %} Section Assistant General Secretary {% endcomment %}
-    <div class="container" style="margin-top:6rem;">
+    <div class="container" style="margin-top:3rem;">
       <h3 style="text-align:center;">Assistant General Secretary</h3>
       <hr/>
       <div class="row">
@@ -133,7 +133,7 @@
     {% comment %} End Section {% endcomment %}
 
     {% comment %} Section PRO {% endcomment %}
-    <div class="container" style="margin-top:6rem;">
+    <div class="container" style="margin-top:3rem;">
       <h3 style="text-align:center;">Director of Publicity (PRO)</h3>
       <hr/>
       <div class="row">
@@ -161,7 +161,7 @@
     {% comment %} End Section {% endcomment %}
 
     {% comment %} Section Treasurer {% endcomment %}
-    <div class="container" style="margin-top:6rem;">
+    <div class="container" style="margin-top:3rem;">
       <h3 style="text-align:center;">Treasurer</h3>
       <hr/>
       <div class="row">
@@ -189,7 +189,7 @@
     {% comment %} End Section  {% endcomment %}
 
     {% comment %} Section Financial Secretary {% endcomment %}
-    <div class="container" style="margin-top:6rem;">
+    <div class="container" style="margin-top:3rem;">
       <h3 style="text-align:center;">Financial Secretary</h3>
       <hr/>
       <div class="row">
@@ -217,7 +217,7 @@
     {% comment %} End Section {% endcomment %}
 
     {% comment %} Section Director of Socials/Welfare {% endcomment %}
-    <div class="container" style="margin-top:6rem;">
+    <div class="container" style="margin-top:3rem;">
       <h3 style="text-align:center;">Director of Socials/Welfare</h3>
       <hr/>
       <div class="row">
@@ -245,7 +245,7 @@
     {% comment %} End Section {% endcomment %}
 
     {% comment %} Section Provost {% endcomment %}
-    <div class="container" style="margin-top:6rem;">
+    <div class="container" style="margin-top:3rem;">
       <h3 style="text-align:center;">Provost</h3>
       <hr/>
       <div class="row">
@@ -273,7 +273,7 @@
     {% comment %} End Section {% endcomment %}
 
     {% comment %} Section Ex Officio Member {% endcomment %}
-    <div class="container" style="margin-top:6rem;">
+    <div class="container" style="margin-top:3rem;">
       <h3 style="text-align:center;">Ex Officio Member</h3>
       <hr/>
       <div class="row">
@@ -294,16 +294,14 @@
               </div>
           </div>
       </div>
-         {% endif %}
-          {% endfor %}
-      </div>
-       <!-- Hidden input to store selected candidate IDs -->
+      {% endif %}
+      {% endfor %}
+  </div>
+  <div class="container mb-5">
+    <!-- Hidden input to store selected candidate IDs -->
     <input type="hidden" name="candidates" id="selected-candidates" />
-
-    <!-- Submit button -->
-    <button type="submit" class="btn btn-success mt-2 mb-3">Submit Vote</button>
-      </div>
-    {% comment %} End Section {% endcomment %}
+    <button type="submit" class="btn btn-primary">Submit Vote</button>
+  </div>
 </form>
 
 <style>
