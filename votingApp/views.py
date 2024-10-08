@@ -1,15 +1,24 @@
+import requests
 from django.utils.timezone import now
 from django.shortcuts import render, redirect
 from django.contrib import messages
-import openpyxl
-from openpyxl.utils import get_column_letter
+from django.contrib.staticfiles import finders
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from django.conf import settings
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Image, Paragraph, Spacer
+from reportlab.lib.units import inch
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.enums import TA_CENTER
+
+from .formMsg import SendMessageForm
 from .models import Candidate, Voter, Position
 from django.views.decorators.csrf import csrf_exempt,csrf_protect
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 
 
-@csrf_exempt  # Ideally, use proper CSRF protection
+@csrf_protect  # Ideally, use proper CSRF protection
 def voter_login(request):
     if request.method == 'POST':
         unique_id = request.POST.get('unique_id')
@@ -92,72 +101,208 @@ def voter_logout(request):
 
 
 # Results view
+# views.py
 def results_view(request):
     positions = Position.objects.all()
     results = {}
 
-    # Calculate vote counts for each candidate under each position
     for position in positions:
-        candidates = Candidate.objects.filter(position=position)
-        position_result = []
+        # Fetch candidates ordered by vote_count descending
+        candidates = Candidate.objects.filter(position=position).order_by('-vote_count')
         
-        for candidate in candidates:
-            position_result.append({
-                'candidate':candidate,
-                'vote_count':candidate.vote_count
-            })
-        # Sort candidates by the highest vote count
-        sorted_results = sorted(position_result, key=lambda x:x['vote_count'], reverse=True)
-        results[position] = sorted_results
+        # Create a dictionary of candidates and their vote counts
+        position_result = {candidate.name: candidate.vote_count for candidate in candidates}
+        
+        # Determine the winner
+        if position_result:
+            winner_name, winner_votes = next(iter(position_result.items()))
+        else:
+            winner_name, winner_votes = None, None
+        
+        # Store candidates and winner in the results dictionary
+        results[position.name] = {
+            'candidates': position_result,
+            'winner': {
+                'name': winner_name,
+                'votes': winner_votes
+            }
+        }
     return render(request, 'results.html', {'results': results})
+
 
 # Chart view
 def chart_view(request):
-    candidates = []
-    votes = []
+    positions = {}  # Create a dictionary to hold positions and their candidates
 
     # Fetch candidates and their votes for the chart
     all_candidates = Candidate.objects.all()
     for candidate in all_candidates:
-        candidates.append(candidate.name)
-        votes.append(candidate.vote_count)
+        position = candidate.position.name  # Assuming each candidate has a position field
+        if position not in positions:
+            positions[position] = {}  # Initialize a dictionary for each position
+        positions[position][candidate.name] = candidate.vote_count  # Store candidate name and votes
 
-    return render(request, 'chart.html', {'candidates': candidates, 'votes': votes})
+    return render(request, 'chart.html', {'positions': positions})  # Pass 'positions' to the template
 
-def export_results_to_excel(request):
-    # Create a new workbook and select the active worksheet
-    wb = openpyxl.Workbook()
-    ws = wb.active
-    ws.title = "Voting Results"
+def export_results_to_pdf(request):
+    # Create HTTP response with appropriate content type for PDF
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="voting_results.pdf"'
 
-    # Add the header row
-    ws.append(["#", "Position", "Candidate", "Vote Count"])
+    # Create a PDF document and specify the page size
+    pdf = SimpleDocTemplate(response, pagesize=A4)
 
-    # Query all positions and their candidates
-    positions = Position.objects.all()
-    row_number = 1  # Initialize row number for results
+    # Sample styles for the document (used for organization name and title)
+    styles = getSampleStyleSheet()
+    title_style = styles['Title']
+    title_style.alignment = TA_CENTER
+    normal_style = styles['Normal']
     
-    # Iterate over positions and their candidates
+    # Organization title (Name of the organization)
+    organization_name = Paragraph("Nigerian Military School (NMS), General Elections 2024", title_style)
+    
+    # Brand logo (assuming it's in the static files directory or specify the path)
+    # You can set the logo image size by adjusting the width and height
+    logo_path = finders.find('images/nms-logo.png')  # Replace with the actual path to the logo
+    if logo_path:  
+        logo = Image(logo_path)
+        logo.drawHeight = 1.25 * inch
+        logo.drawWidth = 1.25 * inch
+    else:
+        logo = Paragraph('Logo not found', normal_style)
+   
+    # Add some space between the logo, organization name, and the table
+    spacer = Spacer(1, 0.25 * inch)
+
+    # Prepare the data to be included in the table
+    data = [["#", "Position", "Candidate", "Vote Count"]]
+    positions = Position.objects.all()
+    
+    row_number = 1
     for position in positions:
         candidates = Candidate.objects.filter(position=position)
-        
         for idx, candidate in enumerate(candidates, start=1):
-            # Write each candidate's position, name, and vote count to the spreadsheet
+            data.append([idx, position.name, candidate.name, candidate.vote_count])
             row_number += 1
-            ws.append([idx, position.name, candidate.name, candidate.vote_count])
 
-    # Adjust the column widths
-    for column_cells in ws.columns:
-        length = max(len(str(cell.value)) for cell in column_cells)
-        ws.column_dimensions[get_column_letter (column_cells[0].column)].width = length + 2
-
-    # Set the HTTP response for the file
-    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = 'attachment; filename=voting_results.xlsx'
-
-    # Save the workbook to the response
-    wb.save(response)
-
+    # Create a table with the data
+    table = Table(data)
+    
+    # Add style to the table (like borders, background colors)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+    ]))
+    # Build the PDF document by adding the logo, title, spacer, and table
+    pdf.build([logo, organization_name, spacer, table])
     return response
 
+def send_voter_whatsApp_message(request):
+    
+    username = settings.USERNAME
+    api_key = settings.API_KEY
+    # api_url = settings.EBULKSMS_API_URL
+    
+    if request.method =='POST':
+        form = SendMessageForm(request.POST)
+        if form.is_valid():
+            selected_voters = form.cleaned_data['voters']
+            message = form.cleaned_data['message']
+            
+            status_messages = []
+            for voter in selected_voters:
+                phone_number = voter.phone_number
+                try:
+                      # Generate message content
+                    voting_link = ''
+                    message = (f"""Dear {voter.firstname} {voter.surname},
+Your voting link for the upcoming NMS election is: {voting_link}
+You're advised to keep the link secret.
+Your voter login username is your NMS unique identifier, and your password is: {voter.voter_code}.""" )
 
+                    payload = {
+                        "WA": {
+                            "auth": {
+                                "username": username,
+                                "apikey": api_key,
+                            },
+                            "senderID":"NMS Election",
+                            "message": {
+                                "subject": "Voting Link",
+                                "messagetext": message,
+                            },
+                            "recipients": [phone_number,]
+                        }
+                    }
+                    headers = {"Content-Type":"application/json"}
+                    # Send request
+                    response = requests.post("https://api.ebulksms.com/sendwhatsapp.json", 
+                        headers=headers, json=payload )  
+                    response_data = response.json()
+                    if response.status_code ==200 and response_data.get('status') =='SUCCESS':
+                       status_messages.append(f"Message sent to {phone_number} successfully.")
+                    else:
+                        status_messages.append(f"Failed to send message to {phone_number}: {response_data.get('message')}")    
+                except Exception as e:
+                     status_messages.append(f"Error sending message to {phone_number}: {str(e)}")
+                     
+             # Display the status messages
+            for status in status_messages:
+                messages.info(request, status)
+            return render(request, 'send_message_status.html', {'status_messages': status_messages})
+    else:
+         # Display the form
+        form = SendMessageForm()
+     # Render the form on GET request
+    return render(request, 'send_whatsApp_msg.html', {'form': form})
+
+            
+
+                    
+        
+
+# def export_results_to_excel(request):
+#     # Create a new workbook and select the active worksheet
+#     wb = openpyxl.Workbook()
+#     ws = wb.active
+#     ws.title = "Voting Results"
+
+#     # Add the header row
+#     ws.append(["#", "Position", "Candidate", "Vote Count"])
+
+#     # Query all positions and their candidates
+#     positions = Position.objects.all()
+#     row_number = 1  # Initialize row number for results
+    
+#     # Iterate over positions and their candidates
+#     for position in positions:
+#         candidates = Candidate.objects.filter(position=position)
+        
+#         for idx, candidate in enumerate(candidates, start=1):
+#             # Write each candidate's position, name, and vote count to the spreadsheet
+#             row_number += 1
+#             ws.append([idx, position.name, candidate.name, candidate.vote_count])
+
+#     # Adjust the column widths
+#     for column_cells in ws.columns:
+#         length = max(len(str(cell.value)) for cell in column_cells)
+#         ws.column_dimensions[get_column_letter (column_cells[0].column)].width = length + 2
+
+#     # Set the HTTP response for the file
+#     response = HttpResponse(content_type='application/vnd.openxmlformats-pdfdocument.spreadsheetml.sheet')
+#     response['Content-Disposition'] = 'attachment; filename=voting_results.pdf'
+
+#     # Save the workbook to the response
+#     wb.save(response)
+
+#     return response
+
+
+#  # Set the HTTP response for the file
+#     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+#     response['Content-Disposition'] = 'attachment; filename=voting_results.xlsx'

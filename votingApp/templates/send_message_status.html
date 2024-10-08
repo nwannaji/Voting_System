@@ -1,0 +1,13 @@
+{%extends 'base.html' %}
+{%load static %}
+
+{%block content %}
+<div class = "container-flex mt-3 justify-content-center">
+    <h2>Message Sending Status</h2>
+<ul>
+    {% for status in status_messages %}
+        <li>{{ status }}</li>
+    {% endfor %}
+</ul>
+</div>
+{%endblock %}
