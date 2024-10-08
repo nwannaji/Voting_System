@@ -1,4 +1,6 @@
 import os
+import random
+import string
 from django.db import models
 from django.utils.timezone import now
 
@@ -35,17 +37,31 @@ class Voter(models.Model):
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, default='')
     phone_number = models.CharField(max_length=15, unique=True)  # Unique phone number
     has_voted = models.BooleanField(default=False)
-    date_voted = models.DateTimeField(default=now,null=True, blank=True)
+    date_voted = models.DateTimeField(auto_now=True,null=True, blank=True)
     voter_code = models.CharField(max_length=6, unique=True, blank=True)  # Alphanumeric voter code
 
-
     def __str__(self):
-        return f"{self.unique_id} - {self.surname}"
+        return f"{self.unique_id } {self.surname} {self.firstname}"
 
-    @property
-    def password(self):
-        # Combine surname and phone number as password
-         f"{self.surname}{self.unique_id}"
+    def  save(self, *args, **kwargs):
+        """
+        Overrides the default save method to automatically generate a unique voter_code
+        if it hasn't been set already.
+        """
+        if not self.voter_code:
+            self.voter_code = self.generate_unique_voter_code()
+        super().save(*args, **kwargs) 
+        
+    def generate_unique_voter_code(self):
+        """
+        Generates a unique 6-character alphanumeric voter code.
+        Ensures that the generated code does not already exist in the database.
+        """
+        characters = string.ascii_uppercase + string.digits #A-Z and 0-9
+        while True:
+            code = ''.join([random.choice(characters) for _ in range(6)])
+            if not Voter.objects.filter(voter_code=code).exists():
+                return code
 
 # Ballot model, ties voter to a vote
 class Ballot(models.Model):

@@ -17,6 +17,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
+admin.site.site_header = " NMS Electronic Voting System"
+admin.site.site_title = "NMS e-Voting System"
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('votingApp.urls')),  # Include votingApp URL

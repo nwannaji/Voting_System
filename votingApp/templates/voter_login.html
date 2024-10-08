@@ -5,7 +5,7 @@
 {% block content %}
 {% if messages %}
 <div class="container mt-3">
-    <p class="alert alert-success text-warning text-center">
+    <p class="alert alert-success text-danger text-center">
        !Oops, You have already cast your vote. Thanks
     </p>
 </div>
@@ -28,6 +28,7 @@
     <div class="card card-center card-medium">
         <div class="card-body">
             <form method="POST" action="{% url 'voter_login' %}">
+                <h3>Voters Login</h3>
                 {% csrf_token %}
                 <div class="mb-3">
                 <div class="form-group">
