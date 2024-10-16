@@ -159,7 +159,7 @@ def export_results_to_pdf(request):
     normal_style = styles['Normal']
     
     # Organization title (Name of the organization)
-    organization_name = Paragraph("Nigerian Military School (NMS), General Elections 2024", title_style)
+    organization_name = Paragraph("Government Technical College (GTC) Enugu, Old Boys Association General Elections 2024", title_style)
     
     # Brand logo (assuming it's in the static files directory or specify the path)
     # You can set the logo image size by adjusting the width and height
@@ -202,107 +202,79 @@ def export_results_to_pdf(request):
     pdf.build([logo, organization_name, spacer, table])
     return response
 
+@csrf_protect  # Use proper CSRF protection
 def send_voter_whatsApp_message(request):
-    
     username = settings.USERNAME
     api_key = settings.API_KEY
-    # api_url = settings.EBULKSMS_API_URL
-    
-    if request.method =='POST':
+
+    if request.method == 'POST':
         form = SendMessageForm(request.POST)
         if form.is_valid():
             selected_voters = form.cleaned_data['voters']
-            message = form.cleaned_data['message']
-            
+            # message = form.cleaned_data['message']
             status_messages = []
+
             for voter in selected_voters:
                 phone_number = voter.phone_number
                 try:
-                      # Generate message content
-                    voting_link = ''
-                    message = (f"""Dear {voter.firstname} {voter.surname},
-Your voting link for the upcoming NMS election is: {voting_link}
-You're advised to keep the link secret.
-Your voter login username is your NMS unique identifier, and your password is: {voter.voter_code}.""" )
+                    # Generate WhatsApp message content
+                    voting_link = generate_voting_link(voter)  # Implement this function as needed
+                    message_content = (
+                        f"Dear {voter.firstname} {voter.surname},\n"
+                        f"Your voting link for the upcoming NMS election is: {voting_link}\n"
+                        "You're advised to keep the link secret.\n"
+                        f"Your voter login username is your NMS unique identifier, and your password is: {voter.voter_code}."
+                    )
 
+                    # Define payload for the WhatsApp message
                     payload = {
                         "WA": {
                             "auth": {
                                 "username": username,
                                 "apikey": api_key,
                             },
-                            "senderID":"NMS Election",
+                            "senderID": "NMS Election",
                             "message": {
                                 "subject": "Voting Link",
-                                "messagetext": message,
+                                "messagetext": message_content,
                             },
-                            "recipients": [phone_number,]
+                            "recipients": [phone_number],
                         }
                     }
-                    headers = {"Content-Type":"application/json"}
-                    # Send request
-                    response = requests.post("https://api.ebulksms.com/sendwhatsapp.json", 
-                        headers=headers, json=payload )  
-                    response_data = response.json()
-                    if response.status_code ==200 and response_data.get('status') =='SUCCESS':
-                       status_messages.append(f"Message sent to {phone_number} successfully.")
+
+                    # Send the WhatsApp message via eBulkSMS API
+                    headers = {"Content-Type": "application/json"}
+                    response = requests.post(
+                        "https://api.ebulksms.com/sendwhatsapp.json",
+                        headers=headers,
+                        json=payload
+                    )
+
+                    # Handle the response
+                    if response.status_code == 200:
+                        status_messages.append(f"Message sent to {phone_number} successfully.")
                     else:
-                        status_messages.append(f"Failed to send message to {phone_number}: {response_data.get('message')}")    
+                        status_messages.append(f"Failed to send message to {phone_number}: {response.text}")
                 except Exception as e:
-                     status_messages.append(f"Error sending message to {phone_number}: {str(e)}")
-                     
-             # Display the status messages
+                    status_messages.append(f"Error sending message to {phone_number}: {str(e)}")
+
+            # Display the status messages on the frontend
             for status in status_messages:
                 messages.info(request, status)
             return render(request, 'send_message_status.html', {'status_messages': status_messages})
+
     else:
-         # Display the form
         form = SendMessageForm()
-     # Render the form on GET request
+       
     return render(request, 'send_whatsApp_msg.html', {'form': form})
 
-            
+def generate_voting_link(voter):
+    # Implement your logic to generate the voting link for each voter
+    return f"https://nms-elections.com/vote/{voter.unique_id}/"
 
-                    
-        
-
-# def export_results_to_excel(request):
-#     # Create a new workbook and select the active worksheet
-#     wb = openpyxl.Workbook()
-#     ws = wb.active
-#     ws.title = "Voting Results"
-
-#     # Add the header row
-#     ws.append(["#", "Position", "Candidate", "Vote Count"])
-
-#     # Query all positions and their candidates
-#     positions = Position.objects.all()
-#     row_number = 1  # Initialize row number for results
-    
-#     # Iterate over positions and their candidates
-#     for position in positions:
-#         candidates = Candidate.objects.filter(position=position)
-        
-#         for idx, candidate in enumerate(candidates, start=1):
-#             # Write each candidate's position, name, and vote count to the spreadsheet
-#             row_number += 1
-#             ws.append([idx, position.name, candidate.name, candidate.vote_count])
-
-#     # Adjust the column widths
-#     for column_cells in ws.columns:
-#         length = max(len(str(cell.value)) for cell in column_cells)
-#         ws.column_dimensions[get_column_letter (column_cells[0].column)].width = length + 2
-
-#     # Set the HTTP response for the file
-#     response = HttpResponse(content_type='application/vnd.openxmlformats-pdfdocument.spreadsheetml.sheet')
-#     response['Content-Disposition'] = 'attachment; filename=voting_results.pdf'
-
-#     # Save the workbook to the response
-#     wb.save(response)
-
-#     return response
+def send_message_status(request):
+    # This view renders the status messages
+    status_messages = list(messages.get_messages(request))
+    return render(request, 'send_message_status.html', {'status_messages': status_messages})
 
 
-#  # Set the HTTP response for the file
-#     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-#     response['Content-Disposition'] = 'attachment; filename=voting_results.xlsx'

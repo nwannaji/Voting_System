@@ -7,4 +7,3 @@ class SendMessageForm(forms.Form):
         widget=forms.CheckboxSelectMultiple,
         label="Select Voters"
     )
-    message = forms.CharField(widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}), label="Message")

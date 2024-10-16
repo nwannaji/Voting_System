@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'votingApp',
     'bootstrap4',
+    'widget_tweaks',
 ]
 
 MIDDLEWARE = [
@@ -73,7 +74,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'voting_system.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -140,9 +140,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 USERNAME = config("EBULKSMS_USERNAME")
 API_KEY = config("EBULKSMS_API_KEY")
 # EBULKSMS_API_URL ="https://api.ebulksms.com/sendwhatsapp"
-
-# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
