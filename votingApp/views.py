@@ -10,41 +10,45 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Image, Para
 from reportlab.lib.units import inch
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.enums import TA_CENTER
-
+from django.db import models
+from django.db.models import F
 from .formMsg import SendMessageForm
 from .models import Candidate, Voter, Position
-from django.views.decorators.csrf import csrf_exempt,csrf_protect
+from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
+from django.db import transaction
 
 
-@csrf_protect  # Ideally, use proper CSRF protection
+@csrf_protect
 def voter_login(request):
-    if request.method == 'POST':
-        unique_id = request.POST.get('unique_id')
-        voter_code = request.POST.get('password')
-        
-        # Authentication logic here
-        try:
-            voter = Voter.objects.get(unique_id=unique_id, voter_code=voter_code)
-            if voter.has_voted:
-                messages.info(request, "You have already cast your vote.")
-                return redirect('voter_login')
-                
-            # Store voter ID in session
-            request.session['voter_id'] = voter.id
-            
-            # Redirect to candidate page
-            return redirect('candidate_page')  
-        except Voter.DoesNotExist:
-            messages.error(request, "Invalid login details.")
-            return render(request, 'voter_login.html')
-    return render(request, 'voter_login.html')
+    show_message = request.session.pop('show_already_voted_message', False)
 
-@csrf_exempt
+    if request.method == 'POST':
+        phone_number = request.POST.get('phone_number', '').strip()
+        password = request.POST.get('password', '').strip()
+
+        # Authentication logic using phone number
+        try:
+            voter = Voter.objects.get(phone_number=phone_number)
+            if password == voter.voting_code:
+                if voter.has_voted:
+                    request.session['show_already_voted_message'] = True
+                    return redirect('voter_login')
+
+                request.session['voter_id'] = voter.id
+                return redirect('candidate_page')
+        except Voter.DoesNotExist:
+            pass
+
+        messages.error(request, "Invalid login details.")
+        return render(request, 'voter_login.html')
+
+    return render(request, 'voter_login.html', {'show_already_voted_message': show_message})
+
 def candidate_page(request):
     if 'voter_id' not in request.session:
-        return redirect('voter_login')  # Redirect if not logged in
+        return redirect('voter_login')
 
     if request.method == 'POST':
         selected_ids = request.POST.get('candidates')
@@ -59,8 +63,7 @@ def candidate_page(request):
             for candidate_id in candidate_ids:
                 try:
                     candidate = Candidate.objects.get(id=candidate_id)
-                    candidate.vote_count += 1
-                    candidate.save()
+                    Candidate.objects.filter(id=candidate_id).update(vote_count=models.F('vote_count') + 1)
                     voted_candidates.append(candidate.name)
                 except Candidate.DoesNotExist:
                     messages.error(request, f"Candidate with ID {candidate_id} not found.")
@@ -68,19 +71,20 @@ def candidate_page(request):
 
             try:
                 voter = Voter.objects.get(id=request.session['voter_id'])
-                voter.has_voted = True
-                voter.date_voted = now()
-                voter.save()
+                if voter.has_voted:
+                    messages.info(request, 'You have already cast your vote.')
+                    return redirect('candidate_page')
+
+                with transaction.atomic():
+                    voter.has_voted = True
+                    voter.date_voted = now()
+                    voter.save()
             except Voter.DoesNotExist:
                 messages.error(request, "Voter not found.")
                 return redirect('voter_login')
-            if voter.has_voted:
-                messages.info(request, 'You have already cast your vote.')
-                return redirect('candidate_page')
-                
+
             if voted_candidates:
-                voted_names = ', '.join(voted_candidates)
-                messages.success(request, f"You have cast  your vote successfully!")
+                messages.success(request, f"You have cast your vote successfully!")
             else:
                 messages.warning(request, "No valid votes were cast.")
 
@@ -90,11 +94,18 @@ def candidate_page(request):
             messages.error(request, "No candidates were selected.")
             return redirect('candidate_page')
 
-    candidates = Candidate.objects.all()
-    return render(request, 'candidate_page.html', {'candidates': candidates})
+    # Group candidates by position in Python for predictable ordering
+    positions = Position.objects.all().order_by('display_order', 'name')
+    candidates_by_position = {}
+    for pos in positions:
+        candidates_by_position[pos] = list(Candidate.objects.filter(position=pos).order_by('name'))
+
+    return render(request, 'candidate_page.html', {
+        'candidates_by_position': candidates_by_position
+    })
 
 
-@csrf_exempt  # Ideally, remove this and use CSRF tokens
+@csrf_protect  # Ideally, remove this and use CSRF tokens
 def voter_logout(request):
     request.session.flush()  # Clear all session data (logs out the voter)
     return redirect('voter_login')

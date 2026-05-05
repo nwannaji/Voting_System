@@ -9,373 +9,185 @@
 
 {% block content %}
 <h2 style="text-align: center">Select Candidates</h2>
+
 {% if messages %}
 <div class="container">
-    <p class="alert alert-success text-center">
-        Thank you for voting! Your vote has been cast successfully.
-    </p>
-
-    <!-- Trigger auto-logout after 10 seconds only if vote is successful -->
-    <script>
-        setTimeout(function() {
-            window.location.href = "{% url 'voter_logout' %}";  // Redirect to logout after 10 seconds
-        }, 10000);
-    </script>
+  <p class="alert alert-success text-center">
+    Thank you for voting! Your vote has been cast successfully.
+  </p>
+  <script>
+    setTimeout(function () {
+      window.location.href = "{% url 'voter_logout' %}";
+    }, 10000);
+  </script>
 </div>
 {% endif %}
+
 <form id="vote-form" method="POST" action="">
-    {% csrf_token %}
-   {% comment %} SECTION FOR CHAIRMAN CANDIDATES {% endcomment %}
-   <!-- Section for Chairman Candidates -->
-   <div class="container" style="margin-top:3rem;">
-    <h3 style="text-align:center;">Chairman</h3>
-    <hr/>
-    <div class="row">
-        {% for candidate in candidates %}
-            {% if candidate.position.name == "Chairman" %}
-            <div class="col-sm-6">
-                <div class="card candidate-card mb-3 justify-content-center"
-                     data-candidate-id="{{ candidate.id }}"
-                     data-position="{{ candidate.position.name }}"
-                     style="width: 18rem;">
-                    <div class="card text-center">
-                        <img src="{{ candidate.photo.url }}" alt="{{ candidate.name }}" class="card-img-top" />
-                        <div class="card-body">
-                            <h5 class="card-title">{{ candidate.name }}</h5>
-                            <h5 class="card-text">{{ candidate.position.name }}</h5>
-                        </div>
-                        <div class="checkmark d-none">&#10004;</div> <!-- Checkmark, initially hidden -->
-                    </div>
-                </div>
+  {% csrf_token %}
+
+  {% for position, candidates in candidates_by_position.items %}
+  <div class="container position-section" style="margin-top:2rem;">
+    <h3 class="position-title">{{ position.name }}</h3>
+    <hr class="position-divider" />
+    <div class="row justify-content-center">
+      {% for candidate in candidates %}
+      <div class="col-md-4 col-sm-6 mb-4">
+        <div class="card candidate-card h-100" data-candidate-id="{{ candidate.id }}"
+          data-position="{{ position.name }}">
+          <div class="card text-center h-100">
+            <img src="{{ candidate.photo.url }}" alt="{{ candidate.name }}" class="card-img-top candidate-photo" />
+            <div class="card-body candidate-info">
+              <h5 class="card-title candidate-name">{{ candidate.name }}</h5>
             </div>
-            {% endif %}
-        {% endfor %}
-    </div>
-</div>
-{% comment %} END SECTION {% endcomment %}
-
-    {% comment %} VICE-CHAIRM {% endcomment %}
-    <div class="container" style="margin-top:3rem;">
-      <h3 style="text-align:center;">Vice Chairman</h3>
-      <hr/>
-      <div class="row">
-          {% for candidate in candidates %}
-         {% if candidate.position.name == 'Vice Chairman'%}
-         <div class="col-sm-6">
-          <div class="card candidate-card mb-3 justify-content-center"
-               data-candidate-id="{{ candidate.id }}"
-               data-position="{{ candidate.position.name }}"
-               style="width: 18rem;">
-              <div class="card text-center">
-                  <img src="{{ candidate.photo.url }}" alt="{{ candidate.name }}" class="card-img-top" />
-                  <div class="card-body">
-                      <h5 class="card-title">{{ candidate.name }}</h5>
-                      <h5 class="card-text">{{ candidate.position.name }}</h5>
-                  </div>
-                  <div class="checkmark d-none">&#10004;</div> <!-- Checkmark, initially hidden -->
-              </div>
+            <div class="checkmark d-none">&#10004;</div>
           </div>
+        </div>
       </div>
-         {% endif %}
-          {% endfor %}
-      </div>
-      </div>
-    {% comment %} END VICE-CHAIRMAN {% endcomment %}
-
-    {% comment %}Section General Secretary {% endcomment %}
-    <div class="container" style="margin-top:3rem;">
-      <h3 style="text-align:center;">General Secretary</h3>
-      <hr/>
-      <div class="row">
-          {% for candidate in candidates %}
-         {% if candidate.position.name == 'General Secretary'%}
-         <div class="col-sm-6">
-          <div class="card candidate-card mb-3 justify-content-center"
-               data-candidate-id="{{ candidate.id }}"
-               data-position="{{ candidate.position.name }}"
-               style="width: 18rem;">
-              <div class="card text-center">
-                  <img src="{{ candidate.photo.url }}" alt="{{ candidate.name }}" class="card-img-top" />
-                  <div class="card-body">
-                      <h5 class="card-title">{{ candidate.name }}</h5>
-                      <h5 class="card-text">{{ candidate.position.name }}</h5>
-                  </div>
-                  <div class="checkmark d-none">&#10004;</div> <!-- Checkmark, initially hidden -->
-              </div>
-          </div>
-      </div>
-         {% endif %}
-          {% endfor %}
-      </div>
-      </div>
-    {% comment %} End Section {% endcomment %}
-
-    {% comment %} Section Assistant General Secretary {% endcomment %}
-    <div class="container" style="margin-top:3rem;">
-      <h3 style="text-align:center;">Assistant General Secretary</h3>
-      <hr/>
-      <div class="row">
-          {% for candidate in candidates %}
-         {% if candidate.position.name == 'Assistant General Secretary'%}
-         <div class="col-sm-6">
-          <div class="card candidate-card mb-3 justify-content-center"
-               data-candidate-id="{{ candidate.id }}"
-               data-position="{{ candidate.position.name }}"
-               style="width: 18rem;">
-              <div class="card text-center">
-                  <img src="{{ candidate.photo.url }}" alt="{{ candidate.name }}" class="card-img-top" />
-                  <div class="card-body">
-                      <h5 class="card-title">{{ candidate.name }}</h5>
-                      <h5 class="card-text">{{ candidate.position.name }}</h5>
-                  </div>
-                  <div class="checkmark d-none">&#10004;</div> <!-- Checkmark, initially hidden -->
-              </div>
-          </div>
-      </div>
-         {% endif %}
-          {% endfor %}
-      </div>
-      </div>
-    {% comment %} End Section {% endcomment %}
-
-    {% comment %} Section PRO {% endcomment %}
-    <div class="container" style="margin-top:3rem;">
-      <h3 style="text-align:center;">Director of Publicity (PRO)</h3>
-      <hr/>
-      <div class="row">
-          {% for candidate in candidates %}
-         {% if candidate.position.name == 'Director of Publicity (PRO)'%}
-         <div class="col-sm-6">
-          <div class="card candidate-card mb-3 justify-content-center"
-               data-candidate-id="{{ candidate.id }}"
-               data-position="{{ candidate.position.name }}"
-               style="width: 18rem;">
-              <div class="card text-center">
-                  <img src="{{ candidate.photo.url }}" alt="{{ candidate.name }}" class="card-img-top" />
-                  <div class="card-body">
-                      <h5 class="card-title">{{ candidate.name }}</h5>
-                      <h5 class="card-text">{{ candidate.position.name }}</h5>
-                  </div>
-                  <div class="checkmark d-none">&#10004;</div> <!-- Checkmark, initially hidden -->
-              </div>
-          </div>
-      </div>
-         {% endif %}
-          {% endfor %}
-      </div>
-      </div>
-    {% comment %} End Section {% endcomment %}
-
-    {% comment %} Section Treasurer {% endcomment %}
-    <div class="container" style="margin-top:3rem;">
-      <h3 style="text-align:center;">Treasurer</h3>
-      <hr/>
-      <div class="row">
-          {% for candidate in candidates %}
-         {% if candidate.position.name == 'Treasurer'%}
-         <div class="col-sm-6">
-          <div class="card candidate-card mb-3 justify-content-center"
-               data-candidate-id="{{ candidate.id }}"
-               data-position="{{ candidate.position.name }}"
-               style="width: 18rem;">
-              <div class="card text-center">
-                  <img src="{{ candidate.photo.url }}" alt="{{ candidate.name }}" class="card-img-top" />
-                  <div class="card-body">
-                      <h5 class="card-title">{{ candidate.name }}</h5>
-                      <h5 class="card-text">{{ candidate.position.name }}</h5>
-                  </div>
-                  <div class="checkmark d-none">&#10004;</div> <!-- Checkmark, initially hidden -->
-              </div>
-          </div>
-      </div>
-         {% endif %}
-          {% endfor %}
-      </div>
-      </div>
-    {% comment %} End Section  {% endcomment %}
-
-    {% comment %} Section Financial Secretary {% endcomment %}
-    <div class="container" style="margin-top:3rem;">
-      <h3 style="text-align:center;">Financial Secretary</h3>
-      <hr/>
-      <div class="row">
-          {% for candidate in candidates %}
-         {% if candidate.position.name == 'Financial Secretary'%}
-         <div class="col-sm-6">
-          <div class="card candidate-card mb-3 justify-content-center"
-               data-candidate-id="{{ candidate.id }}"
-               data-position="{{ candidate.position.name }}"
-               style="width: 18rem;">
-              <div class="card text-center">
-                  <img src="{{ candidate.photo.url }}" alt="{{ candidate.name }}" class="card-img-top" />
-                  <div class="card-body">
-                      <h5 class="card-title">{{ candidate.name }}</h5>
-                      <h5 class="card-text">{{ candidate.position.name }}</h5>
-                  </div>
-                  <div class="checkmark d-none">&#10004;</div> <!-- Checkmark, initially hidden -->
-              </div>
-          </div>
-      </div>
-         {% endif %}
-          {% endfor %}
-      </div>
-      </div>
-    {% comment %} End Section {% endcomment %}
-
-    {% comment %} Section Director of Socials/Welfare {% endcomment %}
-    <div class="container" style="margin-top:3rem;">
-      <h3 style="text-align:center;">Director of Socials/Welfare</h3>
-      <hr/>
-      <div class="row">
-          {% for candidate in candidates %}
-         {% if candidate.position.name == 'Director of Socials/Welfare Officer'%}
-         <div class="col-sm-6">
-          <div class="card candidate-card mb-3 justify-content-center"
-               data-candidate-id="{{ candidate.id }}"
-               data-position="{{ candidate.position.name }}"
-               style="width: 18rem;">
-              <div class="card text-center">
-                  <img src="{{ candidate.photo.url }}" alt="{{ candidate.name }}" class="card-img-top" />
-                  <div class="card-body">
-                      <h5 class="card-title">{{ candidate.name }}</h5>
-                      <h5 class="card-text">{{ candidate.position.name }}</h5>
-                  </div>
-                  <div class="checkmark d-none">&#10004;</div> <!-- Checkmark, initially hidden -->
-              </div>
-          </div>
-      </div>
-         {% endif %}
-          {% endfor %}
-      </div>
-      </div>
-    {% comment %} End Section {% endcomment %}
-
-    {% comment %} Section Provost {% endcomment %}
-    <div class="container" style="margin-top:3rem;">
-      <h3 style="text-align:center;">Provost</h3>
-      <hr/>
-      <div class="row">
-          {% for candidate in candidates %}
-         {% if candidate.position.name == 'Provost'%}
-         <div class="col-sm-6">
-          <div class="card candidate-card mb-3 justify-content-center"
-               data-candidate-id="{{ candidate.id }}"
-               data-position="{{ candidate.position.name }}"
-               style="width: 18rem;">
-              <div class="card text-center">
-                  <img src="{{ candidate.photo.url }}" alt="{{ candidate.name }}" class="card-img-top" />
-                  <div class="card-body">
-                      <h5 class="card-title">{{ candidate.name }}</h5>
-                      <h5 class="card-text">{{ candidate.position.name }}</h5>
-                  </div>
-                  <div class="checkmark d-none">&#10004;</div> <!-- Checkmark, initially hidden -->
-              </div>
-          </div>
-      </div>
-         {% endif %}
-          {% endfor %}
-      </div>
-      </div>
-    {% comment %} End Section {% endcomment %}
-
-    {% comment %} Section Ex Officio Member {% endcomment %}
-    <div class="container" style="margin-top:3rem;">
-      <h3 style="text-align:center;">Ex Officio Member</h3>
-      <hr/>
-      <div class="row">
-          {% for candidate in candidates %}
-         {% if candidate.position.name == 'Ex Officio Member'%}
-         <div class="col-sm-6">
-          <div class="card candidate-card mb-3 justify-content-center"
-               data-candidate-id="{{ candidate.id }}"
-               data-position="{{ candidate.position.name }}"
-               style="width: 18rem;">
-              <div class="card text-center">
-                  <img src="{{ candidate.photo.url }}" alt="{{ candidate.name }}" class="card-img-top" />
-                  <div class="card-body">
-                      <h5 class="card-title">{{ candidate.name }}</h5>
-                      <h5 class="card-text">{{ candidate.position.name }}</h5>
-                  </div>
-                  <div class="checkmark d-none">&#10004;</div> <!-- Checkmark, initially hidden -->
-              </div>
-          </div>
-      </div>
-      {% endif %}
       {% endfor %}
+    </div>
   </div>
-  <div class="container mb-5">
-    <!-- Hidden input to store selected candidate IDs -->
+  {% endfor %}
+
+  <div class="container submit-section mb-5">
     <input type="hidden" name="candidates" id="selected-candidates" />
-    <button type="submit" class="btn btn-primary">Submit Vote</button>
+    <button type="submit" class="btn btn-success btn-lg px-5">Submit Vote</button>
   </div>
 </form>
 
 <style>
   .checkmark {
-    font-size: 3rem;
-    color: green;
+    font-size: 2.5rem;
+    color: #27ae60;
     position: absolute;
     top: 10px;
     right: 10px;
     background-color: white;
     border-radius: 50%;
-    padding: 10px;
+    padding: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    z-index: 10;
   }
+
   .candidate-card {
     position: relative;
     cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
   }
-  .card {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+
+  .candidate-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
   }
+
   .candidate-card.selected {
-    border: 2px solid green;
+    border: 3px solid #27ae60;
   }
-  .btn {
-    mb-2;
+
+  .candidate-photo {
+    height: 180px;
+    object-fit: cover;
+  }
+
+  .candidate-info {
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .candidate-name {
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  .position-title {
+    color: #2c3e50;
+    font-weight: 700;
+    text-align: center;
+    padding: 10px 0;
+  }
+
+  .position-divider {
+    border: 2px solid #3498db;
+    width: 100px;
+    margin: 0 auto 20px;
+  }
+
+  .position-section {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  .submit-section {
+    text-align: center;
+    padding-top: 20px;
+  }
+
+  .btn-success {
+    background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+    border: none;
+    font-weight: 600;
+  }
+
+  .btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
+  }
+
+  .card {
+    border-radius: 10px;
+    overflow: hidden;
   }
 </style>
 
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    const selectedCandidates = {}; // Object to track selected candidates per position
+    const selectedCandidates = {};
 
     document.querySelectorAll(".candidate-card").forEach((card) => {
       card.addEventListener("click", function () {
         const candidateId = this.getAttribute("data-candidate-id");
         const position = this.getAttribute("data-position");
 
-        // Deselect the previously selected candidate for this position
+        // Deselect previous candidate for this position
         if (selectedCandidates[position] && selectedCandidates[position] !== candidateId) {
           const previousCard = document.querySelector(
             `.candidate-card[data-candidate-id="${selectedCandidates[position]}"]`
           );
           previousCard.querySelector(".checkmark").classList.add("d-none");
+          previousCard.classList.remove("selected");
         }
 
-        // Toggle the current selection for the position
+        // Toggle selection
         if (selectedCandidates[position] === candidateId) {
           this.querySelector(".checkmark").classList.add("d-none");
-          delete selectedCandidates[position]; // Remove selection for this position
+          this.classList.remove("selected");
+          delete selectedCandidates[position];
         } else {
           this.querySelector(".checkmark").classList.remove("d-none");
-          selectedCandidates[position] = candidateId; // Set the new selection for this position
+          this.classList.add("selected");
+          selectedCandidates[position] = candidateId;
         }
 
-        // Update the hidden input value with the selected candidate IDs
+        // Update hidden input
         document.getElementById("selected-candidates").value = Object.values(selectedCandidates).join(",");
       });
     });
 
-    // Prevent form submission if no candidates are selected
-    document.getElementById("vote-form").addEventListener("submit", function(event) {
+    // Form submission validation
+    document.getElementById("vote-form").addEventListener("submit", function (event) {
       const selectedIds = document.getElementById("selected-candidates").value;
       if (!selectedIds) {
-        event.preventDefault();  // Prevent submission if no candidates selected
+        event.preventDefault();
         alert("Please select at least one candidate to vote.");
       }
     });
   });
 </script>
-
 {% endblock %}

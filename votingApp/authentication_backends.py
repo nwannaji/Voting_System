@@ -1,18 +1,13 @@
 from django.contrib.auth.backends import BaseBackend
-from django.contrib.auth.models import User
 from .models import Voter
 
 class VoterAuthBackend(BaseBackend):
-    """
-    Custom authentication backend that authenticates voters using their unique ID and a password
-    composed of their surname and phone number.
-    """
 
-    def authenticate(self, request, unique_id=None, password=None):
+    def authenticate(self, request, phone_number=None, password=None):
         try:
-            voter = Voter.objects.get(unique_id=unique_id)
-            # Check if the provided password matches the constructed password
-            if voter.password == password:
+            voter = Voter.objects.get(phone_number=phone_number)
+            # Simple comparison for plain text voting_code
+            if password == voter.voting_code:
                 return voter  # Authentication successful, return voter object
         except Voter.DoesNotExist:
             return None  # No such voter
