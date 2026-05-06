@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}  <!-- Load widget_tweaks library -->
+
+{% block content %}
+<div class="container pt-5 mt-5">
+    <h2 class="mt-4">Send WhatsApp Message to Voters</h2>
+    <form method="POST" class="needs-validation" novalidate>
+        {% csrf_token %}
+        <div class="mt-4">
+            {{ form.voters }}
+        </div>
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary mt-3">Send Message</button>
+    </form>
+</div>
+
+<!-- Select All Script -->
+<script>
+    document.getElementById('select-all').addEventListener('change', function(e) {
+        const checkboxes = document.querySelectorAll('input[type="checkbox"][name="voters"]');
+        checkboxes.forEach((checkbox) => {
+            checkbox.checked = e.target.checked;
+        });
+    });
+</script>
+
+<!-- Optional: Bootstrap Validation -->
+<script>
+    // Bootstrap validation script
+    (function () {
+        'use strict'
+        var forms = document.querySelectorAll('.needs-validation')
+
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    })()
+</script>
+{% endblock %}

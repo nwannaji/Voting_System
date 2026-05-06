@@ -1,0 +1,67 @@
+<!-- chart.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block viewResult %}
+<li class="nav-item">
+  <a href="{% url 'results' %}" class="btn btn-primary mr-3 mt-3">View Result</a>
+</li>
+{% endblock %}
+
+{% block content %}
+<h2 style="text-align: center">Vote Results Analytics</h2>
+<div class="container mt-5">
+    <div class="row">
+        {% for position, candidates in positions.items %}
+        <div class="col-md-4 mb-4">
+            <div class="card text-center">
+                <div class="card-header">
+                    <h5>{{ position }}</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="chart-{{ forloop.counter }}" width="200" height="200"></canvas>
+                </div>
+                <div class="card-footer">
+                    {% for candidate, vote in candidates.items %}
+                    <p>{{ candidate }}: {{ vote }} votes</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const positionsData = {{ positions|safe }};  // Ensure 'positions' is passed to JavaScript
+
+    // Create a chart for each position
+    Object.entries(positionsData).forEach(([position, candidates], index) => {
+        const ctx = document.getElementById(`chart-${index + 1}`).getContext('2d');
+        const labels = Object.keys(candidates);
+        const votes = Object.values(candidates);
+
+        const myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Vote Count',
+                    data: votes,
+                    backgroundColor: 'rgba(39, 245, 213, 0.8)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

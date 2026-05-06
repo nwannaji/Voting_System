@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card text-center">
+        <div class="card-body">
+            <h2 class="text-danger">Invalid Voting Link</h2>
+            <p class="mt-3">This voting link is not valid or has already been used.</p>
+            <p>Please check your WhatsApp message for the correct link or contact the NBA Abuja Branch administration.</p>
+            <a href="{% url 'voter_login' %}" class="btn btn-primary mt-3">Go to Login Page</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

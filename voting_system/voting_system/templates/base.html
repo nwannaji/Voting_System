@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}NMS E-Voting System{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'bootstrap-5/css/bootstrap.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'bootstrap-5/custom.css' %}" />
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+      <div class="container">
+        <a class="navbar-brand" href="/">
+          <span class="icon icon-vote"></span>
+          NMS E-Voting System
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'voter_login' %}">Login</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'results' %}">Results</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'chart' %}">Charts</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container main-content">
+      {% block content %}
+      <!-- Child templates will inject content here -->
+      {% endblock %}
+    </div>
+
+    <footer class="py-2">
+      <div class="container">
+        <p class="mb-0 text-white-50 small">&copy; 2024 NMS E-Voting System</p>
+      </div>
+    </footer>
+
+    <script src="{% static 'bootstrap-5/js/bootstrap.bundle.min.js' %}"></script>
+  </body>
+</html>

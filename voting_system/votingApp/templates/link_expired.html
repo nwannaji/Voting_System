@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card text-center">
+        <div class="card-body">
+            <h2 class="text-danger">Voting Link Expired</h2>
+            <p class="mt-3">This voting link has expired for security reasons.</p>
+            <p>Please contact the NBA Abuja Branch administration to receive a new voting link.</p>
+            <a href="{% url 'voter_login' %}" class="btn btn-primary mt-3">Go to Login Page</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

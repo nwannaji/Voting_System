@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{%block viewResult %}
+<li class="nav-item">
+  <a href="{% url 'results' %}" class="btn btn-primary mr-3 mt-3">View Result</a>
+</li>
+{% endblock %}
+
+{% block content %}
+<h2 style="text-align: center">Select Candidates</h2>
+
+{% if messages %}
+<div class="container">
+  <p class="alert alert-success text-center">
+    Thank you for voting! Your vote has been cast successfully.
+  </p>
+  <script>
+    setTimeout(function () {
+      window.location.href = "{% url 'voter_logout' %}";
+    }, 10000);
+  </script>
+</div>
+{% endif %}
+
+<form id="vote-form" method="POST" action="">
+  {% csrf_token %}
+
+  {% for position, candidates in candidates_by_position.items %}
+  <div class="container position-section" style="margin-top:2rem;">
+    <h3 class="position-title">{{ position.name }}</h3>
+    <hr class="position-divider" />
+    <div class="row justify-content-center">
+      {% for candidate in candidates %}
+      <div class="col-md-4 col-sm-6 mb-4">
+        <div class="card candidate-card h-100" data-candidate-id="{{ candidate.id }}"
+          data-position="{{ position.name }}">
+          <div class="card text-center h-100">
+            <img src="{{ candidate.photo.url }}" alt="{{ candidate.name }}" class="card-img-top candidate-photo" />
+            <div class="card-body candidate-info">
+              <h5 class="card-title candidate-name">{{ candidate.name }}</h5>
+            </div>
+            <div class="checkmark d-none">&#10004;</div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+
+  <div class="container submit-section mb-5">
+    <input type="hidden" name="candidates" id="selected-candidates" />
+    <button type="submit" class="btn btn-success btn-lg px-5">Submit Vote</button>
+  </div>
+</form>
+
+<style>
+  .checkmark {
+    font-size: 2.5rem;
+    color: #27ae60;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: white;
+    border-radius: 50%;
+    padding: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+  }
+
+  .candidate-card {
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+  }
+
+  .candidate-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .candidate-card.selected {
+    border: 3px solid #27ae60;
+  }
+
+  .candidate-photo {
+    height: 250px;
+    object-fit: cover;
+    object-position: center top;
+  }
+
+  .candidate-info {
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .candidate-name {
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  .position-title {
+    color: #2c3e50;
+    font-weight: 700;
+    text-align: center;
+    padding: 10px 0;
+  }
+
+  .position-divider {
+    border: 2px solid #3498db;
+    width: 100px;
+    margin: 0 auto 20px;
+  }
+
+  .position-section {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  .submit-section {
+    text-align: center;
+    padding-top: 20px;
+  }
+
+  .btn-success {
+    background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+    border: none;
+    font-weight: 600;
+  }
+
+  .btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
+  }
+
+  .card {
+    border-radius: 10px;
+    overflow: hidden;
+  }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const selectedCandidates = {};
+    const totalPositions = document.querySelectorAll(".position-section").length;
+
+    document.querySelectorAll(".candidate-card").forEach((card) => {
+      card.addEventListener("click", function () {
+        const candidateId = this.getAttribute("data-candidate-id");
+        const position = this.getAttribute("data-position");
+
+        // Deselect previous candidate for this position
+        if (selectedCandidates[position] && selectedCandidates[position] !== candidateId) {
+          const previousCard = document.querySelector(
+            `.candidate-card[data-candidate-id="${selectedCandidates[position]}"]`
+          );
+          previousCard.querySelector(".checkmark").classList.add("d-none");
+          previousCard.classList.remove("selected");
+        }
+
+        // Toggle selection
+        if (selectedCandidates[position] === candidateId) {
+          this.querySelector(".checkmark").classList.add("d-none");
+          this.classList.remove("selected");
+          delete selectedCandidates[position];
+        } else {
+          this.querySelector(".checkmark").classList.remove("d-none");
+          this.classList.add("selected");
+          selectedCandidates[position] = candidateId;
+        }
+
+        // Update hidden input
+        document.getElementById("selected-candidates").value = Object.values(selectedCandidates).join(",");
+      });
+    });
+
+    // Form submission validation - ensure all positions have a selection
+    document.getElementById("vote-form").addEventListener("submit", function (event) {
+      const selectedIds = document.getElementById("selected-candidates").value;
+      const selectedCount = Object.keys(selectedCandidates).length;
+
+      if (!selectedIds) {
+        event.preventDefault();
+        alert("Please select at least one candidate to vote.");
+        return;
+      }
+
+      if (selectedCount < totalPositions) {
+        event.preventDefault();
+        // Find which positions are not filled
+        const unfilledPositions = [];
+        document.querySelectorAll(".position-title").forEach(function(title) {
+          const posName = title.textContent.trim();
+          if (!selectedCandidates[posName]) {
+            unfilledPositions.push(posName);
+          }
+        });
+        alert("Please select a candidate for all positions.\n\nMissing: " + unfilledPositions.join(", "));
+      }
+    });
+  });
+</script>
+{% endblock %}
