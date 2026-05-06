@@ -228,11 +228,6 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
-        'voteApp': {
-            'handlers': ['console', 'file'],
-            'level': 'INFO',
-            'propagate': True,
-        },
     },
     'root': {
         'handlers': ['console'],
