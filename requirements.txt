@@ -1,0 +1,29 @@
+# Django and core dependencies
+Django>=5.1,<6.0
+python-decouple>=3.8
+python-dotenv>=1.0.0
+
+# Database
+psycopg2-binary>=2.9.9
+
+# Image handling
+Pillow>=10.0.0
+
+# PDF generation
+reportlab>=4.0.0
+
+# HTTP requests
+requests>=2.31.0
+
+# CORS handling
+django-cors-headers>=4.3.0
+
+# Caching (for production Redis)
+# django-redis>=5.4.0
+# redis>=5.0.0
+
+# WSGI server for Azure
+gunicorn>=21.2.0
+
+# WhiteNoise for static files
+whitenoise>=6.6.0
